@@ -2,13 +2,14 @@ import * as React from "react";
 import { EthRpc, JsonRpc, HttpTransport } from 'emerald-js';
 import { BigNumber } from 'bignumber.js';
 var contractJson = require("../build/contracts/MetaCoin.json");
-import * as Contract from "truffle-contract";
-import EmeraldWeb3Provider from "../emerald-web3-provider";
 import IMetaCoin from "./contract-interfaces/IMetaCoin";
+import Contract from './util/Contract';
+
+const metaCoinContract = new Contract(contractJson.abi);
 
 interface IAppState {
   emerald: EthRpc;
-  netVersion: string;
+  netVersion: any;
   balance: BigNumber;
   truffleContract: IMetaCoin;
 }
@@ -16,9 +17,6 @@ interface IAppState {
 const endpoint = "http://localhost:8545";
 const emeraldJsonRpc = new JsonRpc(new HttpTransport(endpoint));
 const emerald = new EthRpc(emeraldJsonRpc);
-
-const MetaCoinContract: Contract = Contract(contractJson);
-MetaCoinContract.setProvider(new EmeraldWeb3Provider(emeraldJsonRpc));
 
 class App extends React.Component<{}, IAppState> {
   public state: IAppState;
@@ -35,16 +33,19 @@ class App extends React.Component<{}, IAppState> {
   }
 
   public async componentWillMount() {
-    const metaCoinContractInstance: IMetaCoin = await MetaCoinContract.deployed();
     this.setState({
-      truffleContract: metaCoinContractInstance,
+      truffleContract: null,
     });
   }
 
   public async getInfo() {
+    const data = metaCoinContract.functionToData('getBalance', {addr: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"});
+    const netVersion = await emerald.net.version();
+    const balanceResults = await emerald.eth.call({to: contractJson.networks[netVersion].address, data});
+
     this.setState({
-      netVersion: await emerald.net.version(),
-      balance: await this.state.truffleContract.getBalance("0x85AB05DcD17399fAadb93a362E69EbB27CeF0C2c"),
+      netVersion,
+      balance: new BigNumber(balanceResults)
     });
   }
 

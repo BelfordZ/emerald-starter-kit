@@ -57,6 +57,7 @@
     "bignumber.js": "^4.1.0",
     "bluebird": "^3.5.1",
     "emerald-js": "git+https://github.com/ETCDEVTeam/emerald-js.git",
+    "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "^5.1.2",
     "raf": "^3.4.0",
     "react": "^16.1.0",
